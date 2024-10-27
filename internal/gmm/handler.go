@@ -240,6 +240,13 @@ func CreatePDUSession(ulNasTransport *nasMessage.ULNASTransport,
 			return false, errors.New("Ue doesn't have allowedNssai")
 		}
 	}
+	
+	// oie snssai
+	ue.GmmLog.Infof("1 - Select SMF failed:")
+	if snssai.Sd == "" {
+		snssai.Sd = "010203"
+		ue.GmmLog.Infof("2 - Select SMF failed: snssai.Sd %s", snssai.Sd)
+	}
 
 	if ulNasTransport.DNN != nil {
 		dnn = ulNasTransport.DNN.GetDNN()
@@ -1103,9 +1110,15 @@ func handleRequestedNssai(ue *context.AmfUe, anType models.AccessType) error {
 		}
 
 		needSliceSelection := false
-		for _, requestedSnssai := range requestedNssai {
-			ue.GmmLog.Infof("RequestedNssai - ServingSnssai: %+v, HomeSnssai: %+v",
-				requestedSnssai.ServingSnssai, requestedSnssai.HomeSnssai)
+		for i_, requestedSnssai := range requestedNssai {
+			// oie snssai
+			if requestedSnssai.ServingSnssai.Sd == "" {
+				requestedSnssai.ServingSnssai.Sd = "010203"
+			}
+
+			ue.GmmLog.Infof("-----------------------------------------------------------------------------------------------")
+			ue.GmmLog.Infof("%d, RequestedNssai - ServingSnssai: %+v, HomeSnssai: %+v",
+				i_, requestedSnssai.ServingSnssai, requestedSnssai.HomeSnssai)
 			if ue.InSubscribedNssai(*requestedSnssai.ServingSnssai) {
 				allowedSnssai := models.AllowedSnssai{
 					AllowedSnssai: &models.Snssai{
